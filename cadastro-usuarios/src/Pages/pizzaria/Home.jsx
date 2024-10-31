@@ -26,6 +26,13 @@ function Home() {
         >
           Cadastro
         </button>
+        <button
+          className="bg-red-500 p-4 px-12 rounded-md"
+          value="pedidos"
+          onClick={handleRedirect}
+        >
+          Pedidos
+        </button>
       </div>
     </div>
   );

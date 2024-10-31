@@ -14,14 +14,14 @@
 */
 
 import express from "express";
-import cors from 'cors'
+import cors from "cors";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 const app = express();
 app.use(express.json());
-app.use(cors())
+app.use(cors());
 
 app.listen(3000); // abrir servidor
 
@@ -33,7 +33,7 @@ app.listen(3000); // abrir servidor
 
 app.post("/users", async (req, res) => {
   //crirar
-  console.log(req.body)
+  console.log(req.body);
 
   await prisma.user.create({
     data: {
@@ -80,4 +80,57 @@ app.delete("/users/:id", async (req, res) => {
   });
 
   res.status(200).json({ message: "usuário deletado com sucesso!" });
+});
+app.post("/pedido", async (req, res) => {
+  console.log("body", req.body);
+  try {
+    const {
+      nomeItem,
+      endereco,
+      comentarios,
+      formaPagamento,
+      itens = [],
+      total,
+    } = req.body;
+
+    const novoPedido = await prisma.pedido.create({
+      data: {
+        nomeItem,
+        endereco,
+        comentarios,
+        formaPagamento,
+        total,
+        itens: {
+          create: itens.map((item) => ({
+            nome: item.nome,
+            quantidade: item.quantidade,
+            preco: item.preco,
+          })),
+        },
+      },
+      include: {
+        itens: true,
+      },
+    });
+
+    res.status(201).json(novoPedido);
+  } catch (error) {
+    console.error("Erro ao criar pedido:", error);
+    res.status(500).json({ error: "Erro ao criar pedido" });
+  }
+});
+
+app.get("/pedidos", async (req, res) => {
+  try {
+    const pedidos = await prisma.pedido.findMany({
+      include: {
+        itens: true, // Inclui os itens para cada pedido
+      },
+    });
+
+    res.status(200).json(pedidos);
+  } catch (error) {
+    console.error("Erro ao buscar pedidos:", error);
+    res.status(500).json({ error: "Erro ao buscar pedidos" });
+  }
 });

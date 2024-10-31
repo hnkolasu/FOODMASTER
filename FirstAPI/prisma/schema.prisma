@@ -19,3 +19,22 @@ model User {
   name    String
   age     String   
 }
+
+model Pedido {
+  id             String      @id @default(auto()) @map("_id") @db.ObjectId
+  nomeItem       String
+  endereco       String
+  comentarios    String?
+  formaPagamento String
+  itens          Item[]   // Relacionamento de um para muitos com Item
+  total          Float
+}
+
+model Item {
+  id       String      @id @default(auto()) @map("_id") @db.ObjectId
+  nome     String
+  quantidade Int
+  preco    Float
+  pedido   Pedido   @relation(fields: [pedidoId], references: [id])
+  pedidoId String
+}

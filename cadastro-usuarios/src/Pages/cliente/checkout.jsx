@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import api from "../../services/api";
 
 function Checkout() {
   const location = useLocation();
@@ -10,12 +11,39 @@ function Checkout() {
   const { items, total } = location.state || {};
 
   const handleRedirect = () => {
+    navigate("/status", { state: { address, comments, items, total } });
+  };
+
+  async function createPedido(e) {
     if (!address) {
       alert("Por favor, insira um endereço.");
       return;
     }
-    navigate("/status", { state: { address, comments, items, total } });
-  };
+
+    const itensNovos = items.map((item) => {
+      return {
+        nome: item.nome,
+        quantidade: 1,
+        preco: item.preco,
+      };
+    });
+
+    const novoPedido = {
+      nomeItem: "Nicolas",
+      endereco: address,
+      comentarios: comments,
+      formaPagamento: "Cartão",
+      itens: itensNovos,
+      total: parseFloat(total),
+    };
+
+    console.log(novoPedido);
+    await api.post("/pedido", {
+      ...novoPedido,
+    });
+
+    handleRedirect(e);
+  }
 
   return (
     <div className="pt-12">
@@ -63,7 +91,7 @@ function Checkout() {
           <p className="text-lg font-semibold">Total: R$ {total}</p>
         </div>
         <button
-          onClick={handleRedirect}
+          onClick={createPedido}
           className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded w-full"
         >
           Confirmar Pedido
