@@ -4,6 +4,7 @@ import api from "../../services/api";
 
 function Cadastro() {
   const [users, setUsers] = useState([]);
+  const [error, setError] = useState("");
 
   const inputName = useRef();
   const inputAge = useRef();
@@ -14,25 +15,58 @@ function Cadastro() {
     setUsers(res.data);
   }
 
-  async function createUsers() {
+  function validateForm() {
+    const name = inputName.current.value.trim();
+    const age = parseInt(inputAge.current.value, 10);
+    const email = inputEmail.current.value.trim();
+
+    // Verificar nome
+    if (!/^[a-zA-Z\s]{2,}$/.test(name)) {
+      setError(
+        "Nome inválido. Deve conter pelo menos 2 caracteres alfabéticos."
+      );
+      return false;
+    }
+
+    // Verificar idade
+    if (isNaN(age) || age < 18) {
+      setError("Idade inválida. Deve ser 18 ou mais.");
+      return false;
+    }
+
+    // Verificar email
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError("Email inválido.");
+      return false;
+    }
+
+    setError(""); // Limpar mensagem de erro
+    return true;
+  }
+
+  async function createUsers(e) {
+    e.preventDefault(); // Evita reload da página
+
+    if (!validateForm()) {
+      return;
+    }
+
     await api.post("/users", {
       name: inputName.current.value,
       age: inputAge.current.value,
       email: inputEmail.current.value,
     });
 
+    inputName.current.value = "";
+    inputAge.current.value = "";
+    inputEmail.current.value = "";
     getusers();
   }
 
   async function deleteUsers(id) {
     await api.delete(`/users/${id}`);
-
     getusers();
   }
-
-  useEffect(() => {
-    console.log(users);
-  }, [users]);
 
   useEffect(() => {
     getusers();
@@ -40,8 +74,11 @@ function Cadastro() {
 
   return (
     <div className="bg-zinc-300 p-8">
-      <form className="flex flex-col gap-2 m-8">
+      <form className="flex flex-col gap-2 m-8" onSubmit={createUsers}>
         <h1 className="text-2xl font-bold mb-4">Faça seu login</h1>
+
+        {error && <p className="text-red-500 font-bold">{error}</p>}
+
         <div>
           <label className="block text-gray-700 text-sm font-bold mb-2">
             Nome:
@@ -50,7 +87,7 @@ function Cadastro() {
             ref={inputName}
             placeholder="Nome"
             name="nome"
-            type="nome"
+            type="text"
             className="border border-gray-300 rounded-md w-full p-2"
           />
         </div>
@@ -62,7 +99,7 @@ function Cadastro() {
             ref={inputAge}
             placeholder="Idade"
             name="idade"
-            type="idade"
+            type="number"
             className="border border-gray-300 rounded-md w-full p-2"
           />
         </div>
@@ -80,8 +117,8 @@ function Cadastro() {
         </div>
 
         <button
+          type="submit"
           className="bg-zinc-400 mt-4 hover:bg-zinc-500 text-black font-bold py-2 px-4 rounded w-full"
-          onClick={createUsers}
         >
           Cadastrar
         </button>

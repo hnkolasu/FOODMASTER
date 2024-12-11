@@ -19,22 +19,14 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-const app = express();
+export const app = express();
 app.use(express.json());
 app.use(cors());
 
-app.listen(3000); // abrir servidor
-
-/*
-    Rotas:
-    1) tipo de rota / método HTTP: GET(Listas "users"), POST(Criar user), PUT(Editar o user), DELETE(deletar user).
-    2) Endereço
-*/
+app.listen(3000);
 
 app.post("/users", async (req, res) => {
-  //crirar
-  console.log(req.body);
-
+  console.log("/users : ", req.body);
   await prisma.user.create({
     data: {
       email: req.body.email,
@@ -42,13 +34,11 @@ app.post("/users", async (req, res) => {
       age: req.body.age,
     },
   });
-
-  res.status(201).json(req.body);
+  console.log("r", req.body);
+  res.status(200).json(req.body);
 });
 
 app.get("/users", async (req, res) => {
-  //lista usuários
-
   const users = await prisma.user.findMany();
 
   res.status(200).json(users);
@@ -82,7 +72,6 @@ app.delete("/users/:id", async (req, res) => {
   res.status(200).json({ message: "usuário deletado com sucesso!" });
 });
 app.post("/pedido", async (req, res) => {
-  console.log("body", req.body);
   try {
     const {
       nomeItem,
@@ -124,7 +113,7 @@ app.get("/pedidos", async (req, res) => {
   try {
     const pedidos = await prisma.pedido.findMany({
       include: {
-        itens: true, // Inclui os itens para cada pedido
+        itens: true,
       },
     });
 
